@@ -1,3 +1,4 @@
+@@ -0,0 +1,166 @@
 /**
  *  Aeon HEM - Xively
  *
@@ -9,21 +10,22 @@
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed
- *  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License  for the specific language governing permissions and limitations under the License.
+ *  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License  for 
+ *  the specific language governing permissions and limitations under the License.
  *
  *
  *
- *  Genesys: Based off of Aeon Smart Meter Code sample provided by SmartThings (2013-05-30), Aeon Home Energy Meter v2 by Barry A. Burke, and Xively Logger by Patrick Stuart  Built on US model
- *           may also work on international versions (currently reports total values only)
+ *  Genesys: Based off of Aeon Smart Meter Code sample provided by SmartThings (2013-05-30), Aeon Home Energy Meter v2 by Barry A. Burke, 
+ *  and Xively Logger by Patrick Stuart  Built on US model may also work on international versions (currently reports total values only)
  */
 
 
 // Automatically generated. Make future change here.
 definition (
-                name: "Aeon HEM - Xively",
+                name: "Aeon HEM + Temp - Xively",
                 namespace: "smartthings",
                 author: "Dan Anghelescu",
-                description: "Aeon HEM - Xively Logger",
+                description: "Aeon HEM + Temp - Xively",
                 category: "My Apps",
                 iconUrl: "https://graph.api.smartthings.com/api/devices/icons/st.Electronics.electronics13-icn?displaySize",
                 iconX2Url: "https://graph.api.smartthings.com/api/devices/icons/st.Electronics.electronics13-icn?displaySize=2x")
@@ -32,8 +34,6 @@ preferences {
     section("Log devices...") {
         input "energymeters", "capability.EnergyMeter", title: "Energy Meter", required: false, multiple: true
         input "thermostats", "capability.thermostat", title: "Thermostat", required: false, multiple: true
-        input "weatherstations", "capability.temperatureMeasurement", title: "Outside Temperature", required: false, multiple: true 
-
     }
 
     section ("Xively Info") {
@@ -70,14 +70,15 @@ def checkSensors() {
 
     def logitems = []
     for (t in settings.energymeters) {
-        logitems.add([t.displayName, "energymeter.energy", t.latestValue("energy"), "KilowattHours", "kWh"] )
-        state[t.displayName + ".energy"] = t.latestValue("energy")
+        logitems.add([t.displayName, "power", t.latestValue("power"), "Watts", "W"] )
+        state[t.displayName + ".power"] = t.latestValue("power")
     }
-    for (t in settings.thermostats) {
-        logitems.add([t.displayName, "inside.temperature", t.latestValue("temperature"), "Farenheight", "°F"] )
-        state[t.displayName + ".temperature"] = t.latestValue("temperature")
 
-/*        
+    for (t in settings.thermostats) {
+
+//        logitems.add([t.displayName, "temperature", t.latestValue("temperature")] )
+//        state[t.displayName + ".temperature"] = t.latestValue("temperature")
+        
         if ( t.currentValue("thermostatOperatingState")  ==  "cooling") {
                 logitems.add([t.displayName, "thermostatState", 1 ])
                 state[t.displayName + ".thermostatOperatingState"] = 1
@@ -87,29 +88,27 @@ def checkSensors() {
                 logitems.add([t.displayName, "thermostatState", 2 ])
                 state[t.displayName + ".thermostatOperatingState"] = 2
         }
-
+        
         if ( t.currentValue("thermostatOperatingState")  ==  "idle") {
                 logitems.add([t.displayName, "thermostatState", 0 ])
                 state[t.displayName + ".thermostatOperatingState"] = 0
         }
-*/
     }
+
     for (t in settings.energymeters) {
-        logitems.add([t.displayName, "energymeter.power", t.latestValue("power"), "Watts", "W"] )
-        state[t.displayName + ".power"] = t.latestValue("power")
-    }
-    for (t in settings.energymeters) {
-        logitems.add([t.displayName, "energymeter.volts", t.latestValue("volts"), "Volts", "V"] )
+        logitems.add([t.displayName, "volts", t.latestValue("volts"), "Volts", "V"] )
         state[t.displayName + ".volts"] = t.latestValue("volts")
     }
-    for (t in settings.energymeters) {
-        logitems.add([t.displayName, "energymeter.amps", t.latestValue("amps"), "Amps", "A"] )
-        state[t.displayName + ".amps"] = t.latestValue("amps")
-    }
-    for (t in settings.weatherstations) {
-        logitems.add([t.displayName, "outside.temperature", t.latestValue("temperature"), "Farenheight", "°F"] )
-        state[t.displayName + ".temperature"] = t.latestValue("temperature")
-    }
+
+//   for (t in settings.thermostats) {
+//       logitems.add([t.displayName, "coolingSetpoint", t.latestValue("coolingSetpoint")] )
+//        state[t.displayName + ".coolingSetpoint"] = t.latestValue("coolingSetpoint")
+// 
+//        logitems.add([t.displayName, "heatingSetpoint", t.latestValue("heatingSetpoint")] )
+//        state[t.displayName + ".heatingSetpoint"] = t.latestValue("heatingSetpoint")
+
+//   }
+
     logField2(logitems)
 
 }
@@ -129,7 +128,7 @@ private logField2(logItems) {
     def xivelyinfo = ""
     logItems.eachWithIndex() { item, i ->
     def channelname = item[0].replace(" ","_") + "_" + item[1]
-    xivelyinfo += "{\"id\":\"${channelname}\",\"current_value\":\"${item[2]}\",\"unit\":{\"label\":\"${item[3]}\",\"symbol\":\"${item[4]}\"}}"
+    xivelyinfo += "{\"id\":\"${channelname}\",\"current_value\":\"${item[2]}\"}"
     if (i.toInteger() + 1 < logItems.size())
     {
     xivelyinfo += ","
@@ -165,4 +164,4 @@ def captureState(theDevice) {
         deviceAttrValue[attrName] = attrValue
     }
     return deviceAttrValue
-}
+} 
